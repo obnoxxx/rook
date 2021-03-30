@@ -34,6 +34,11 @@ OPERATOR_SDK_PLATFORM = x86_64-linux-gnu
 INCLUDE_CSV_TEMPLATES = true
 endif
 
+ifeq ($(HOST_PLATFORM),darwin_amd64)
+OPERATOR_SDK_PLATFORM = x86_64-apple-darwin
+INCLUDE_CSV_TEMPLATES = true
+endif
+
 OPERATOR_SDK := $(TOOLS_HOST_DIR)/operator-sdk-$(OPERATOR_SDK_VERSION)
 YQ := $(TOOLS_HOST_DIR)/yq
 
