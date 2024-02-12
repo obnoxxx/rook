@@ -33,6 +33,9 @@ spec:
     #deviceFilter:
   monitoring:
     enabled: false
+  network:
+   provider: host-strict
+   hostNetwork: true
   healthCheck:
     daemonHealth:
       mon:
