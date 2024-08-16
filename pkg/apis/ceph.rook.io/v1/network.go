@@ -23,9 +23,16 @@ import (
 	"strings"
 
 	nadv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
+
 	nadutils "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/utils"
 	"github.com/pkg/errors"
 )
+
+// EnforceHostNetwork is a global/package variable, that can be set via the rook-operator-config setting
+// "ROOK_ENFORCE_HOST_NETWORK". when set to "true", it lets rook create all pods with host network enabled. This can be used, for example, to help allow Rook to run in k8s clusters with no CNI, so that host networking is required
+// while setter and getter functions are defined in opcontroller,
+// the variable is defined here in order to avoid import cycles.
+var EnforceHostNetwork bool = false
 
 // IsMultus get whether to use multus network provider
 func (n *NetworkSpec) IsMultus() bool {
@@ -40,7 +47,7 @@ func (n *NetworkSpec) IsMultus() bool {
 // together with an empty or unset network provider has the same effect as
 // network.Provider set to "host"
 func (n *NetworkSpec) IsHost() bool {
-	return (n.HostNetwork && n.Provider == NetworkProviderDefault) || n.Provider == NetworkProviderHost
+	return EnforceHostNetwork || (n.HostNetwork && n.Provider == NetworkProviderDefault) || n.Provider == NetworkProviderHost
 }
 
 func ValidateNetworkSpec(clusterNamespace string, spec NetworkSpec) error {
@@ -62,7 +69,7 @@ func ValidateNetworkSpec(clusterNamespace string, spec NetworkSpec) error {
 
 	if !spec.AddressRanges.IsEmpty() {
 		if !spec.IsMultus() && !spec.IsHost() {
-			// TODO: be sure to update docs that AddressRanges can be specified for host networking  as
+			// TODO: be sure to update docs that AddressRanges can be specified for host networking as
 			// well as multus so that the override configmap doesn't need to be set
 			return errors.Errorf("network ranges can only be specified for %q and %q network providers", NetworkProviderHost, NetworkProviderMultus)
 		}

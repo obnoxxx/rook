@@ -50,7 +50,9 @@ type ClusterHealth struct {
 
 const (
 	// OperatorSettingConfigMapName refers to ConfigMap that configures rook ceph operator
-	OperatorSettingConfigMapName string = "rook-ceph-operator-config"
+	OperatorSettingConfigMapName   string = "rook-ceph-operator-config"
+	EnforceHostNetworkSettingName  string = "ROOK_ENFORCE_HOST_NETWORK"
+	EnforceHostNetworkDefaultValue string = "false"
 
 	// UninitializedCephConfigError refers to the error message printed by the Ceph CLI when there is no ceph configuration file
 	// This typically is raised when the operator has not finished initializing
@@ -114,6 +116,22 @@ func SetAllowLoopDevices(data map[string]string) {
 
 func LoopDevicesAllowed() bool {
 	return loopDevicesAllowed
+}
+
+func SetEnforceHostNetwork(data map[string]string) {
+
+	val := k8sutil.GetValue(data, EnforceHostNetworkSettingName, EnforceHostNetworkDefaultValue)
+	ret, err := strconv.ParseBool(val)
+
+	if err != nil {
+		ret = false
+		logger.Warningf("failed to parse value %q for %q. assuming false value", val, EnforceHostNetworkSettingName)
+	}
+	cephv1.EnforceHostNetwork = ret
+}
+
+func EnforceHostNetwork() bool {
+	return cephv1.EnforceHostNetwork
 }
 
 // canIgnoreHealthErrStatusInReconcile determines whether a status of HEALTH_ERR in the CephCluster can be ignored safely.

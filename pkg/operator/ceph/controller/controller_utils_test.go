@@ -106,6 +106,28 @@ func TestSetAllowLoopDevices(t *testing.T) {
 	assert.True(t, LoopDevicesAllowed())
 }
 
+func TestSetEnforceHostNetwork(t *testing.T) {
+	// test default value
+	opConfig := map[string]string{}
+	SetEnforceHostNetwork(opConfig)
+	assert.False(t, EnforceHostNetwork())
+
+	// test invalid setting
+	opConfig["ROOK_ENFORCE_NETWORK"] = "foo"
+	SetEnforceHostNetwork(opConfig)
+	assert.False(t, EnforceHostNetwork())
+
+	// test valid settings
+	opConfig["ROOK_ENFORCE_NETWORK"] = "true"
+	SetEnforceHostNetwork(opConfig)
+	assert.True(t, EnforceHostNetwork())
+
+	opConfig["ROOK_ENFORCE_NETWORK"] = "false"
+	SetEnforceHostNetwork(opConfig)
+	assert.False(t, EnforceHostNetwork())
+
+}
+
 func TestIsReadyToReconcile(t *testing.T) {
 	scheme := scheme.Scheme
 	scheme.AddKnownTypes(cephv1.SchemeGroupVersion, &cephv1.CephCluster{}, &cephv1.CephClusterList{})
