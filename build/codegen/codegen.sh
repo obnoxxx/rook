@@ -14,29 +14,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-GROUP_VERSIONS="ceph.rook.io:v1"
+##GROUP_VERSIONS="ceph.rook.io:v1"
 
 scriptdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+basedir="$(cd "$(dirname "${scriptdir}/../../../../.." )" && pwd)"
+
+boilerplate="${CODE_GENERATOR}/examples/hack/"boilerplate.go.txt
+kube_codegen="${CODE_GENERATOR}/kube_codegen.sh"
+
+
+echo "DEBUG: scriptdir: ${scriptdir}"
+echo "DEBUG: basedir: ${basedir}"
+echo "DEBUG: CODE_GENERATOR: ${CODE_GENERATOR}"
+echo "DEBUG: boilerplate ${boilerplate}"
+echo "DEBUG: kube_codegen: ${kube_codegen}"
+
+
+
+set -o pipefail
+
+
+source "${kube_codegen}"
+
+
+
+## echo "DEBUG: done"
+## exit 0
 
 # CODE GENERATION
 # we run deepcopy and client,lister,informer generations separately so we can use the flag "--plural-exceptions"
 # which is only known by client,lister,informer binary and not the deepcopy binary
 
 # run code deepcopy generation
-bash ${CODE_GENERATOR}/kube_codegen.sh \
-    deepcopy \
-    github.com/rook/rook/pkg/client \
-    github.com/rook/rook/pkg/apis \
-    "${GROUP_VERSIONS}" \
-    --output-base "$(dirname "${BASH_SOURCE[0]}")/../../../../.." \
-    --go-header-file "${scriptdir}/boilerplate.go.txt"
+ kube::codegen::gen_helpers \
+    --boilerplate "${boilerplate}" \
+    "${basedir}/rook/rook"/pkg/apis
+
+##    "${GROUP_VERSIONS}" \
 
 # run code client,lister,informer generation
-bash ${CODE_GENERATOR}/kube_codegen.sh \
-    client,lister,informer \
-    github.com/rook/rook/pkg/client \
-    github.com/rook/rook/pkg/apis \
-    "${GROUP_VERSIONS}" \
-    --output-base "$(dirname "${BASH_SOURCE[0]}")/../../../../.." \
-    --go-header-file "${scriptdir}/boilerplate.go.txt" \
-    --plural-exceptions "CephNFS:CephNFSes"
+kube::codegen::gen_client \
+    --output-dir "${basedir}" \
+    --output-pkg "${basedir}/rook/rook"/pkg/client \
+    --boilerplate "${boilerplate}" \
+    --with-watch \
+    "${basedir}/rook/rook"/pkg/apis \
+
+##    --plural-exceptions "CephNFS:CephNFSes"
