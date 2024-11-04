@@ -49,6 +49,9 @@ func (r *ReconcileNode) createOrUpdateCephCrash(node corev1.Node, tolerations []
 		return controllerutil.OperationResultNone, errors.Errorf("label key %q does not exist on node %q", corev1.LabelHostname, node.GetName())
 	}
 	deploy := &appsv1.Deployment{
+
+		Spec: appsv1.DeploymentSpec{},
+
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      k8sutil.TruncateNodeName(fmt.Sprintf("%s-%%s", CrashCollectorAppName), nodeHostnameLabel),
 			Namespace: cephCluster.GetNamespace(),
@@ -126,7 +129,7 @@ func (r *ReconcileNode) createOrUpdateCephCrash(node corev1.Node, tolerations []
 			},
 		}
 		cephv1.GetCrashCollectorAnnotations(cephCluster.Spec.Annotations).ApplyToObjectMeta(&deploy.Spec.Template.ObjectMeta)
-
+		deploy.Spec.RevisionHistoryLimit = controller.RevisionHistoryLimit()
 		return nil
 	}
 
