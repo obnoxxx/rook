@@ -79,6 +79,16 @@ func (r *ReconcileCSI) setParams() error {
 		CSIParam.ForceCephFSKernelClient = "true"
 	}
 
+	strval := k8sutil.GetValue(r.opConfig.Parameters, "ROOK_REVISION_HISTORY_LIMIT", "")
+	if strval == "" {
+		return errors.New("not  parsxiing e empty string as int for ROOK_REVISION_HISTORY_LIMIT")
+	}
+	if numval, err := strconv.ParseInt(strval, 10, 32); err != nil {
+		return errors.Wrap(err, "failed to parse value for 'ROOK_REVISION_HISTORY_LIMIT'")
+	} else {
+		CSIParam.RevisionHistoryLimit = int32(numval)
+	}
+
 	// parse RPC timeout
 	timeout := k8sutil.GetValue(r.opConfig.Parameters, grpcTimeout, "150")
 	timeoutSeconds, err := strconv.Atoi(timeout)

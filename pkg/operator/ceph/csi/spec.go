@@ -79,6 +79,7 @@ type Param struct {
 	NFSAttachRequired                        bool
 	VolumeGroupSnapshotSupported             bool
 	EnableVolumeGroupSnapshot                bool
+	RevisionHistoryLimit                     int32
 	LogLevel                                 uint8
 	SidecarLogLevel                          uint8
 	CephFSLivenessMetricsPort                uint16
@@ -338,6 +339,7 @@ func (r *ReconcileCSI) startDrivers(ownerInfo *k8sutil.OwnerInfo) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to load rbdplugin template")
 		}
+		rbdPlugin.Spec.RevisionHistoryLimit = &CSIParam.RevisionHistoryLimit
 		if tp.CSILogRotation {
 			applyLogrotateSidecar(&rbdPlugin.Spec.Template, "csi-rbd-daemonset-log-collector", LogrotateTemplatePath, tp)
 		}
@@ -351,6 +353,7 @@ func (r *ReconcileCSI) startDrivers(ownerInfo *k8sutil.OwnerInfo) error {
 			applyLogrotateSidecar(&rbdProvisionerDeployment.Spec.Template, "csi-rbd-deployment-log-collector", LogrotateTemplatePath, tp)
 		}
 		rbdProvisionerDeployment.Spec.Template.Spec.HostNetwork = opcontroller.EnforceHostNetwork()
+		rbdProvisionerDeployment.Spec.RevisionHistoryLimit = &CSIParam.RevisionHistoryLimit
 
 		// Create service if either liveness or GRPC metrics are enabled.
 		if CSIParam.EnableLiveness {
@@ -368,6 +371,8 @@ func (r *ReconcileCSI) startDrivers(ownerInfo *k8sutil.OwnerInfo) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to load CephFS plugin template")
 		}
+		cephfsPlugin.Spec.RevisionHistoryLimit = &CSIParam.RevisionHistoryLimit
+
 		if tp.CSILogRotation {
 			applyLogrotateSidecar(&cephfsPlugin.Spec.Template, "csi-cephfs-daemonset-log-collector", LogrotateTemplatePath, tp)
 		}
@@ -381,6 +386,7 @@ func (r *ReconcileCSI) startDrivers(ownerInfo *k8sutil.OwnerInfo) error {
 			applyLogrotateSidecar(&cephfsProvisionerDeployment.Spec.Template, "csi-cephfs-deployment-log-collector", LogrotateTemplatePath, tp)
 		}
 		cephfsProvisionerDeployment.Spec.Template.Spec.HostNetwork = opcontroller.EnforceHostNetwork()
+		cephfsProvisionerDeployment.Spec.RevisionHistoryLimit = &CSIParam.RevisionHistoryLimit
 
 		// Create service if either liveness or GRPC metrics are enabled.
 		if CSIParam.EnableLiveness {
@@ -399,6 +405,7 @@ func (r *ReconcileCSI) startDrivers(ownerInfo *k8sutil.OwnerInfo) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to load nfs plugin template")
 		}
+		nfsPlugin.Spec.RevisionHistoryLimit = &CSIParam.RevisionHistoryLimit
 		if tp.CSILogRotation {
 			applyLogrotateSidecar(&nfsPlugin.Spec.Template, "csi-nfs-daemonset-log-collector", LogrotateTemplatePath, tp)
 		}
@@ -410,8 +417,10 @@ func (r *ReconcileCSI) startDrivers(ownerInfo *k8sutil.OwnerInfo) error {
 		}
 		if tp.CSILogRotation {
 			applyLogrotateSidecar(&nfsProvisionerDeployment.Spec.Template, "csi-nfs-deployment-log-collector", LogrotateTemplatePath, tp)
+
 		}
 		nfsProvisionerDeployment.Spec.Template.Spec.HostNetwork = opcontroller.EnforceHostNetwork()
+		nfsProvisionerDeployment.Spec.RevisionHistoryLimit = &CSIParam.RevisionHistoryLimit
 	}
 
 	// get common provisioner tolerations and node affinity
