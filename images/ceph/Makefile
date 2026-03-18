@@ -71,10 +71,10 @@ do.build:
 # call this before building multiple arches in parallel to prevent parallel build processes from
 # conflicting
 prerequisites: $(YQv3)
+	@echo === ceph image prerequisites
 
-$(YQv3):
+$(YQv3): $(TOOLS_HOST_DIR)
 	@echo === installing yq $(YQv3_VERSION) $(REAL_HOST_PLATFORM)
-	@mkdir -p $(TOOLS_HOST_DIR)
 	@curl -JL https://github.com/mikefarah/yq/releases/download/$(YQv3_VERSION)/yq_$(REAL_HOST_PLATFORM) -o $(YQv3)
 	@chmod +x $(YQv3)
 

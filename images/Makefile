@@ -23,6 +23,7 @@ export TINI_VERSION = v0.19.0
 # Image Targets
 
 ceph.%:
+	@echo  " === nuilding ceph image for $*"
 	@$(MAKE) -C ceph PLATFORM=$*
 
 do.build: ceph.$(PLATFORM) ;
