@@ -139,10 +139,21 @@ do.build.platform.%:
 .PHONY: do.build.parallel
 do.build.parallel: $(foreach p,$(PLATFORMS_TO_BUILD_FOR), do.build.platform.$(p))
 
+
+.PHONY: build.binaries
+build.binaries: build.common ## build binaries (only build for linux platform)
+	@echo "building binaries..." && \
+	$(MAKE) go.build PLATFORM=linux_$(GOARCH) && \
+	echo "Done building binaries."
+
+.PHONY: build.images
+build.images: build.common ## build images (only for linux platform)
+	echo "building images..." && \
+	$(MAKE) -C images PLATFORM=linux_$(GOARCH) && \
+	echo "done building images."
+
 .PHONY: build
-build: build.common ## Only build for linux platform
-	@$(MAKE) go.build PLATFORM=linux_$(GOARCH)
-	@$(MAKE) -C images PLATFORM=linux_$(GOARCH)
+build: build.binaries build.images ## Only build for linux platform
 
 .PHONY: build.all
 build.all: build.common ## Build source code for all platforms.
